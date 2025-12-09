@@ -2,20 +2,26 @@
 # Flask: Web uygulamasını oluşturmak için ana sınıf.
 # jsonify: Python dictionary'lerini JSON formatında yanıt olarak döndürmek için.
 # request: İstemciden (client) gelen verileri (örn: JSON) almak için.
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 
 # Flask uygulamasını başlatıyoruz.
 app = Flask(__name__)
+# CORS (Cross-Origin Resource Sharing) etkinleştirme
+CORS(app)   
 
 # --- Proje Açıklamanızdaki Sabit Bilgiler ---
 # Normalde bu bilgiler bir veritabanında şifrelenmiş olarak tutulur.
 # Sizin verdiğiniz örneğe göre ("admin" ve "12345") sabit olarak tanımlıyoruz.
 DOGRULANMIS_KULLANICI_ADI = "admin"
 DOGRULANMIS_SIFRE = "12345"
+# Yeni güvenlikli API endpoint'i için sabit Bearer Token
+API_TOKEN = "SUPER_SECRET_TOKEN_12345"
 # ---------------------------------------------
 
 @app.route('/login', methods=['POST'])
 def handle_login():
+
     """
     Kullanıcı girişi için REST API endpoint'i.
     POST metodu ile JSON formatında 'kullanici_adi' ve 'sifre' bekler.
@@ -56,7 +62,35 @@ def handle_login():
             "mesaj": "Hatalı Bilgi Girdiniz"
         }
         return jsonify(response_data), 401 # 401: Unauthorized (Yetkisiz)
+@app.route('/secure_data', methods=['GET'])
+def get_secure_data():
+    """
+    Bu endpoint'e erişim için Bearer Token (API Token) gereklidir.
+    """
+    # HTTP Başlığından (Header) Authorization alanını al
+    auth_header = request.headers.get('Authorization')
 
+    if auth_header:
+        try:
+            # 'Bearer ' ön ekini ayırıp token'ı al
+            token_type, token = auth_header.split()
+        except ValueError:
+            return jsonify({"durum": "hata", "mesaj": "Hatalı yetkilendirme başlığı formatı."}), 401
+
+        # Token tipi ve değerini kontrol et
+        if token_type.lower() == 'bearer' and token == API_TOKEN:
+            # Başarılı Yetkilendirme (Token geçerli)
+            return jsonify({
+                "durum": "basarili",
+                "mesaj": "Gizli verilere erişim sağlandı.",
+                "data": {"user_level": "premium", "record_count": 42}
+            }), 200
+        else:
+            return jsonify({"durum": "hata", "mesaj": "Geçersiz Bearer Token."}), 401
+    else:
+        # Authorization başlığı yoksa
+        return jsonify({"durum": "hata", "mesaj": "Bu kaynağa erişim için Bearer Token gereklidir."}), 401
+    
 @app.route('/status', methods=['GET'])
 def health_check():
     """

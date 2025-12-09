@@ -1,22 +1,25 @@
-# Docker Compose dosya formatının sürümünü belirtir
-version: '3.8'
+# Docker Compose dosya formatının sürümünü belirtir (versiyon satırını kaldırabilirsiniz)
 
-# Uygulamamızın servislerini (hizmetlerini) tanımlıyoruz
 services:
   
-  # Servisimize 'rest-api' adını verelim
+  # 1. SERVİS: REST API (BACKEND) - PORT 8000
   rest-api:
-    
-    # Mevcut dizindeki Dockerfile'ı kullanarak imajı oluştur
     build: .
-    
-    # Container'a kolay hatırlanır bir isim ver
     container_name: basic-login-api
-    
-    # Port yönlendirmesi: "HOST_PORTU:CONTAINER_PORTU"
-    # Bilgisayarınızın 5000 portunu container'ın 5000 portuna bağlar
+    # Port yönlendirmesi: HOST_PORTU 8000 -> CONTAINER_PORTU 5000
     ports:
       - "8000:5000"
-      
-    # Container durursa yeniden başlat
     restart: unless-stopped
+    
+  # 2. SERVİS: FRONTEND ARAYÜZÜ (NGINX) - PORT 8080 (ÖDEV GEREKSİNİMİ)
+  frontend:
+    # ./frontend klasöründeki Dockerfile'ı kullan (Frontend'i çalıştırmak için)
+    build: ./frontend
+    container_name: basic-frontend
+    # Port yönlendirmesi: HOST_PORTU 8080 -> CONTAINER_PORTU 80
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    # Frontend'in başlamadan önce Backend'in ayakta olmasını bekle
+    depends_on:
+      - rest-api

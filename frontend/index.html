@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Docker Full-Stack Ödev Arayüzü</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        #output { margin-top: 20px; padding: 10px; border: 1px dashed #007bff; white-space: pre-wrap; }
+        button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Frontend Servisi (Port 8080)</h2>
+        <p>Backend API adresi: http://localhost:8000</p>
+
+        <h3>Token ile Güvenli Veri Testi</h3>
+        <p>API Token: <pre id="api-token">SUPER_SECRET_TOKEN_12345</pre></p>
+
+        <button onclick="getSecureData()">Güvenli Veriyi Çek (/secure_data)</button>
+        <button onclick="getInsecureData()">Güvenliksiz Veriyi Çek (/status)</button>
+
+        <div id="output">API Yanıtı Buraya Gelecek...</div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const SECURE_TOKEN = document.getElementById('api-token').textContent;
+
+        async function fetchData(endpoint, useToken = false) {
+            document.getElementById('output').textContent = `İstek Gönderiliyor: ${endpoint}...`;
+
+            let headers = {};
+            if (useToken) {
+                headers['Authorization'] = `Bearer ${SECURE_TOKEN}`;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                const data = await response.json();
+                let outputText = `HTTP Durum Kodu: ${response.status}\n\n`;
+                outputText += JSON.stringify(data, null, 2);
+                document.getElementById('output').textContent = outputText;
+
+            } catch (error) {
+                document.getElementById('output').textContent = `Hata: Backend'e Ulaşılamadı. ${error.message}`;
+            }
+        }
+
+        function getSecureData() {
+            fetchData('/secure_data', true);
+        }
+
+        function getInsecureData() {
+            fetchData('/status', false);
+        }
+    </script>
+</body>
+</html>

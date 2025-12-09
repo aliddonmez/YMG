@@ -4,26 +4,22 @@ FROM python:3.11-slim
 # 2. ÇALIŞMA DİZİNİ: Container içinde /app adında bir klasör oluştur ve oraya geç
 WORKDIR /app
 
-# 3. BAĞIMLILIKLAR: Flask kurmak için requirements.txt dosyasına ihtiyacımız var.
-# Flask kütüphanesini requirements.txt dosyasına eklemeliyiz.
-# Bu projede requirements.txt olmadığı için, kurulumu doğrudan RUN komutu ile yapıyoruz.
-# Ancak profesyonel bir yaklaşım için requirements.txt kullanmak daha doğrudur.
+# 3. BAĞIMLILIKLAR: Flask ve gunicorn'u kur
+# 3. BAĞIMLILIKLAR: Flask, gunicorn VE flask-cors'u kur
+RUN pip install Flask gunicorn flask-cors
+# 4. KODU KOPYALA: Docker'ın önbelleğini geçersiz kılmak için bu satır gereklidir.
+# Bu sayede app.py değişmese bile kopyalama işlemi yeniden yapılır.
+RUN echo "Build forced on $(date)" >> /tmp/forced_build_timestamp
 
-# Projeniz sadece Flask kullandığı için, bağımlılığı doğrudan kuruyoruz:
-RUN pip install Flask gunicorn
-
-# 4. KODU KOPYALA: app.py dosyasını container'daki /app dizinine kopyala
+# 5. KODLARI KOPYALA: app.py dosyasını container'daki /app dizinine kopyala
 COPY app.py .
 COPY swagger.yaml . 
 
-# 5. PORTU AÇ: Uygulamanın dinlediği portu (5000) Docker'a bildir
+# 6. PORTU AÇ
 EXPOSE 5000
 
-# 6. ÇEVRE AYARLARI: Flask'ın dışarıdan erişilebilmesi için host'u ayarla
-# (Not: app.py'niz zaten 5000 portunda çalışıyor)
+# 7. ÇEVRE AYARLARI
 ENV FLASK_RUN_HOST=0.0.0.0
 
-# 7. ÇALIŞTIRMA KOMUTU: Container başlatıldığında Gunicorn ile uygulamayı çalıştır
-# Gunicorn, Flask'ın standart geliştirme sunucusundan daha güvenli ve sağlamdır.
-# app:app komutu, 'app.py' dosyasındaki 'app' objesini çalıştır demektir.
+# 8. ÇALIŞTIRMA KOMUTU
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
