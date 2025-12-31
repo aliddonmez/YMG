@@ -1,0 +1,7 @@
+replicaCount: 1
+image:
+  repository: basic-login-api
+  tag: v1
+service:
+  type: NodePort
+  port: 80

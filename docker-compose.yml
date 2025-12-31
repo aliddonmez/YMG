@@ -1,24 +1,24 @@
 services:
-  # 1. VERİTABANI (MongoDB)
+  # 1. VERİTABANI
   mongodb:
     image: mongo:latest
     container_name: ymg-mongodb
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db # Veriler kaybolmasın diye kalıcı alan
+      - mongo-data:/data/db
 
-  # 2. BACKEND (Python Flask)
+  # 2. BACKEND
   rest-api:
-    build: .
+    build: ./backend
     container_name: basic-login-api
     ports:
       - "8000:5000"
     depends_on:
-      - mongodb # Veritabanı açılmadan backend açılmasın
+      - mongodb
     restart: unless-stopped
 
-  # 3. FRONTEND (Nginx HTML)
+  # 3. FRONTEND
   frontend:
     build: ./frontend
     container_name: basic-frontend
@@ -28,6 +28,13 @@ services:
       - rest-api
     restart: unless-stopped
 
-# Veritabanı için kalıcı depolama alanı
+  # 4. MCP SERVİSİ (Ödev Şartı)
+  mcp-server:
+    build: ./mcp
+    container_name: mcp-agent
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
 volumes:
   mongo-data:
