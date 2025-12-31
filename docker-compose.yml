@@ -1,25 +1,33 @@
-# Docker Compose dosya formatının sürümünü belirtir (versiyon satırını kaldırabilirsiniz)
-
 services:
-  
-  # 1. SERVİS: REST API (BACKEND) - PORT 8000
+  # 1. VERİTABANI (MongoDB)
+  mongodb:
+    image: mongo:latest
+    container_name: ymg-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db # Veriler kaybolmasın diye kalıcı alan
+
+  # 2. BACKEND (Python Flask)
   rest-api:
     build: .
     container_name: basic-login-api
-    # Port yönlendirmesi: HOST_PORTU 8000 -> CONTAINER_PORTU 5000
     ports:
       - "8000:5000"
+    depends_on:
+      - mongodb # Veritabanı açılmadan backend açılmasın
     restart: unless-stopped
-    
-  # 2. SERVİS: FRONTEND ARAYÜZÜ (NGINX) - PORT 8080 (ÖDEV GEREKSİNİMİ)
+
+  # 3. FRONTEND (Nginx HTML)
   frontend:
-    # ./frontend klasöründeki Dockerfile'ı kullan (Frontend'i çalıştırmak için)
     build: ./frontend
     container_name: basic-frontend
-    # Port yönlendirmesi: HOST_PORTU 8080 -> CONTAINER_PORTU 80
     ports:
       - "8080:80"
-    restart: unless-stopped
-    # Frontend'in başlamadan önce Backend'in ayakta olmasını bekle
     depends_on:
       - rest-api
+    restart: unless-stopped
+
+# Veritabanı için kalıcı depolama alanı
+volumes:
+  mongo-data:

@@ -2,62 +2,77 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Docker Full-Stack Ödev Arayüzü</title>
+    <title>YMG Full-Stack Uygulama</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; }
-        #output { margin-top: 20px; padding: 10px; border: 1px dashed #007bff; white-space: pre-wrap; }
-        button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 40px; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; font-weight: bold; transition: 0.3s; }
+        .btn-login { background-color: #007bff; color: white; }
+        .btn-login:hover { background-color: #0056b3; }
+        .btn-register { background-color: #28a745; color: white; }
+        .btn-register:hover { background-color: #218838; }
+
+        #output { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; white-space: pre-wrap; text-align: center; min-height: 20px;}
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h2>Frontend Servisi (Port 8080)</h2>
-        <p>Backend API adresi: http://localhost:8000</p>
+        <h2>🚀 Kullanıcı Portali</h2>
+        
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <input type="password" id="password" placeholder="Şifre">
+        
+        <button class="btn-login" onclick="login()">Giriş Yap</button>
+        <button class="btn-register" onclick="register()">Kayıt Ol</button>
 
-        <h3>Token ile Güvenli Veri Testi</h3>
-        <p>API Token: <pre id="api-token">SUPER_SECRET_TOKEN_12345</pre></p>
-
-        <button onclick="getSecureData()">Güvenli Veriyi Çek (/secure_data)</button>
-        <button onclick="getInsecureData()">Güvenliksiz Veriyi Çek (/status)</button>
-
-        <div id="output">API Yanıtı Buraya Gelecek...</div>
+        <div id="output">İşlem bekleniyor...</div>
     </div>
 
     <script>
         const API_URL = 'http://localhost:8000';
-        const SECURE_TOKEN = document.getElementById('api-token').textContent;
 
-        async function fetchData(endpoint, useToken = false) {
-            document.getElementById('output').textContent = `İstek Gönderiliyor: ${endpoint}...`;
-
-            let headers = {};
-            if (useToken) {
-                headers['Authorization'] = `Bearer ${SECURE_TOKEN}`;
-            }
+        async function sendRequest(endpoint, payload) {
+            const output = document.getElementById('output');
+            output.style.color = "#333";
+            output.textContent = "İşlem yapılıyor...";
 
             try {
                 const response = await fetch(`${API_URL}${endpoint}`, {
-                    method: 'GET',
-                    headers: headers
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-
                 const data = await response.json();
-                let outputText = `HTTP Durum Kodu: ${response.status}\n\n`;
-                outputText += JSON.stringify(data, null, 2);
-                document.getElementById('output').textContent = outputText;
-
+                
+                if (response.ok) {
+                    output.style.color = "green";
+                    output.textContent = `✅ ${data.mesaj}`;
+                } else {
+                    output.style.color = "red";
+                    output.textContent = `❌ ${data.mesaj}`;
+                }
             } catch (error) {
-                document.getElementById('output').textContent = `Hata: Backend'e Ulaşılamadı. ${error.message}`;
+                output.style.color = "red";
+                output.textContent = "HATA: Sunucuya ulaşılamadı (Docker açık mı?)";
             }
         }
 
-        function getSecureData() {
-            fetchData('/secure_data', true);
+        function login() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if(!u || !p) return alert("Bilgileri giriniz");
+            sendRequest('/login', { kullanici_adi: u, sifre: p });
         }
 
-        function getInsecureData() {
-            fetchData('/status', false);
+        function register() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if(!u || !p) return alert("Bilgileri giriniz");
+            sendRequest('/register', { kullanici_adi: u, sifre: p });
         }
     </script>
 </body>
