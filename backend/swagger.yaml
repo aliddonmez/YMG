@@ -1,33 +1,22 @@
-# OpenAPI (Swagger) spesifikasyonunun sürümünü belirtir.
-openapi: 3.0.0
 
-# API hakkında genel bilgiler
 info:
   title: Basit Giriş API
-  description: |-
-    Bu API, ödev projesi için oluşturulmuş basit bir kullanıcı doğrulama servisini
-    temsil eder. 'admin' ve '12345' kred bilgileriyle çalışır.
+  description: 'Bu API, ödev projesi için oluşturulmuş basit bir kullanıcı doğrulama
+    servisini
+
+    temsil eder. ''admin'' ve ''12345'' kred bilgileriyle çalışır.'
   version: 1.0.0
-
-# API'nin çalıştığı sunucu adresi (app.py'nin çalıştığı yer)
 servers:
-  - url: http://127.0.0.1:5000
-    description: Yerel Geliştirme Sunucusu
-
-# API yolları (endpoints)
+- url: http://localhost:8000
+  description: Yerel Geliştirme Sunucusu
 paths:
-  # /login endpoint'i
   /login:
-    # POST metodu
     post:
       summary: Kullanıcı girişi yapar
       description: Kullanıcı adı ve şifre alarak sistemi doğrulamaya çalışır.
-      
-      # İstek (Request) gövdesi (body)
       requestBody:
         required: true
         content:
-          # Gönderilen verinin tipi application/json
           application/json:
             schema:
               type: object
@@ -35,18 +24,15 @@ paths:
                 kullanici_adi:
                   type: string
                   description: Sisteme kayıtlı kullanıcı adı
-                  example: "admin"
+                  example: admin
                 sifre:
                   type: string
                   description: Kullanıcıya ait şifre
-                  example: "12345"
+                  example: '12345'
               required:
-                - kullanici_adi
-                - sifre
-      
-      # Yanıtlar (Responses)
+              - kullanici_adi
+              - sifre
       responses:
-        # Başarılı (200 OK) yanıt
         '200':
           description: Giriş Başarılı
           content:
@@ -56,12 +42,10 @@ paths:
                 properties:
                   durum:
                     type: string
-                    example: "basarili"
+                    example: basarili
                   mesaj:
                     type: string
-                    example: "Giriş Başarılı"
-        
-        # Eksik bilgi (400 Bad Request) yanıtı
+                    example: Giriş Başarılı
         '400':
           description: Hatalı istek (JSON formatı veya eksik alanlar)
           content:
@@ -71,12 +55,10 @@ paths:
                 properties:
                   durum:
                     type: string
-                    example: "hata"
+                    example: hata
                   mesaj:
                     type: string
-                    example: "Eksik bilgi. 'kullanici_adi' ve 'sifre' alanları zorunludur."
-
-        # Yetkisiz (401 Unauthorized) yanıt
+                    example: Eksik bilgi. 'kullanici_adi' ve 'sifre' alanları zorunludur.
         '401':
           description: Hatalı kullanıcı adı veya şifre
           content:
@@ -86,7 +68,7 @@ paths:
                 properties:
                   durum:
                     type: string
-                    example: "hata"
+                    example: hata
                   mesaj:
                     type: string
-                    example: "Hatalı Bilgi Girdiniz"
+                    example: Hatalı Bilgi Girdiniz

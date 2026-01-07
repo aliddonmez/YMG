@@ -1,40 +1,35 @@
 services:
-  # 1. VERİTABANI
   mongodb:
     image: mongo:latest
     container_name: ymg-mongodb
     ports:
-      - "27017:27017"
+    - 27017:27017
     volumes:
-      - mongo-data:/data/db
-
-  # 2. BACKEND
+    - mongo-data:/data/db
   rest-api:
     build: ./backend
     container_name: basic-login-api
     ports:
-      - "8000:5000"
+    - 8000:5000
     depends_on:
-      - mongodb
+    - mongodb
     restart: unless-stopped
-
-  # 3. FRONTEND
+    environment:
+      JWT_SECRET: dev-secret-change-me
+      JWT_EXPIRE_MIN: '30'
   frontend:
     build: ./frontend
     container_name: basic-frontend
     ports:
-      - "8080:80"
+    - 8080:80
     depends_on:
-      - rest-api
+    - rest-api
     restart: unless-stopped
-
-  # 4. MCP SERVİSİ (Ödev Şartı)
   mcp-server:
     build: ./mcp
     container_name: mcp-agent
     stdin_open: true
     tty: true
     restart: unless-stopped
-
 volumes:
-  mongo-data:
+  mongo-data: null
